@@ -1,0 +1,88 @@
+/* footer */
+
+.footer {}
+
+.header {}
+
+/* common */
+
+a {
+    color: #fff;
+    cursor: pointer;
+}
+
+a:hover {
+    color: #f44336;
+    text-decoration: none;
+}
+
+body,
+html {
+    width: 100%;
+    height: 100%;
+    font-family: '微软雅黑';
+}
+
+body {
+    -webkit-overflow-scrolling: touch;
+}
+
+/*公共类*/
+
+.img-responsive {
+    display: block;
+    width: 100%;
+    height: 100%;
+}
+
+.vertical-divider {
+    position: relative;
+    top: -16px;
+}
+
+.text-overflow {
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+}
+
+[v-cloak] {
+    display: none !important;
+}
+
+.clearfix:before,
+.clearfix:after {
+    content: " ";
+    display: inline-block;
+    height: 0;
+    clear: both;
+    visibility: hidden;
+}
+
+.clearfix {
+    *zoom: 1;
+}
+
+.fl {
+    float: left
+}
+
+.fr {
+    float: right
+}
+
+.al {
+    text-align: left
+}
+
+.ac {
+    text-align: center
+}
+
+.ar {
+    text-align: right
+}
+
+.hide {
+    display: none
+}

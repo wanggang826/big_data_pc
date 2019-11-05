@@ -1,0 +1,1134 @@
+<!DOCTYPE html>
+<html lang="en" class="index-html">
+
+<head>
+    @@include('tpl/meta.html')
+    <title>青铜峡旅游大数据</title>
+    <link rel="shortcut icon" href="./favicon.ico" />
+    <link rel="stylesheet" href="./lib/reset/reset.css">
+    <!-- build:css -->
+    <link rel="stylesheet" href="./css/common.css">
+    <link rel="stylesheet" href="./css/index.css">
+    <!-- endbuild -->
+</head>
+
+<body>
+    <div id="index-app" v-cloak>
+        <img src="./image/index/title.png" id="title-img">
+        <div class="warning" v-if="warning.msg != ''">
+            <p class="warning-text">{{warning.time}}</p>
+            <p class="warning-text">{{warning.msg}}</p>
+        </div>
+        <header class="header">
+            <div class="column-left" v-if="weather" v-cloak>
+                <div class="ctn-1 bigtitle">
+                    <div class="title">青铜峡市</div>
+                    <div class="weather">
+                        <span class="temp">{{weather.condition.temp}}℃</span>
+                        <span class="condition" v-text="weather.forecast[1].conditionDay"></span>
+                    </div>
+                </div>
+                <div class="ctn-1 list">
+                    <div class="item">
+                        <span>空气质量指数:</span>
+                        <span class="color">{{airCondition}}</span>
+                    </div>
+                    <div class="item">
+                        <span>体感温度指数:</span>
+                        <span class="color">{{weather.condition.realFeel}}</span>
+                    </div>
+                </div>
+                <div class="ctn-1 list">
+                    <div class="item">
+                        <span>紫外线强度:</span>
+                        <span class="color">{{weather.condition.uvi}}</span>
+                    </div>
+                    <div class="item">
+                        <span>风向级别:</span>
+                        <span class="color">{{weather.condition.windDir}}{{weather.condition.windLevel}}级</span>
+                    </div>
+                </div>
+                <div class="ctn-weather">
+                    <p class="today"><img :src="'image/weatherIcon/'+weather.forecast[1].conditionIdDay+'.png'">今天(<span v-text="week3Arr[0]"></span>)</p>
+                    <p class="temp">{{weather.forecast[1].tempNight}}°C~{{weather.forecast[1].tempDay}}°C</p>
+                    <p class="condition">{{weather.forecast[1].conditionDay}}</p>
+                </div>
+                <div class="ctn-weather">
+                    <p class="today"><img :src="'image/weatherIcon/'+weather.forecast[2].conditionIdDay+'.png'">明天(<span v-text="week3Arr[1]"></span>)</p>
+                    <p class="temp">{{weather.forecast[2].tempNight}}°C~{{weather.forecast[2].tempDay}}°C</p>
+                    <p class="condition">{{weather.forecast[2].conditionDay}}</p>
+                </div>
+                <div class="ctn-weather">
+                    <p class="today"><img :src="'image/weatherIcon/'+weather.forecast[3].conditionIdDay+'.png'">后天(<span v-text="week3Arr[2]"></span>)</p>
+                    <p class="temp">{{weather.forecast[3].tempNight}}°C~{{weather.forecast[3].tempDay}}°C</p>
+                    <p class="condition">{{weather.forecast[3].conditionDay}}</p>
+                </div>
+            </div>
+            <div class="column-right" :class="noWarn">
+                <div class="ctn-1">
+                    <div class="normal" v-text="time"></div>
+                    <div class="normal" v-text="week"></div>
+                </div>
+                <div class="ctn-1">
+                    <div class="normal" v-text="date"></div>
+                    <div class="normal" id="lunar"></div>
+                </div>
+                <img src="image/index/logo.png" alt="logo" class="logo">
+            </div>
+        </header>
+        <div class="chart-middle">
+            <div class="left">
+                <div class="left-top">
+                    <div class="chart-title">
+                        <span>各景区接待人数</span>
+                    </div>
+                    <table class="data-table" v-if="reception_num">
+                        <tr class="line1">
+                            <td class="col1">时间</td>
+                            <td class="col2">黄河大峡谷</td>
+                            <td class="col3">黄河楼</td>
+                            <td class="col4">黄河生态园</td>
+                        </tr>
+                        <tr class="line2">
+                            <td class="col1">日</td>
+                            <td class="col2">{{reception_num.dxg[2]}}</td>
+                            <td class="col3">{{reception_num.hhl[2]}}</td>
+                            <td class="col4">{{reception_num.hht[2]}}</td>
+                        </tr>
+                        <tr class="line3">
+                            <td class="col1">月</td>
+                            <td class="col2">{{reception_num.dxg[1]}}</td>
+                            <td class="col3">{{reception_num.hhl[1]}}</td>
+                            <td class="col4">{{reception_num.hht[1]}}</td>
+                        </tr>
+                        <tr class="line4">
+                            <td class="col1">年</td>
+                            <td class="col2">{{reception_num.dxg[0]}}</td>
+                            <td class="col3">{{reception_num.hhl[0]}}</td>
+                            <td class="col4">{{reception_num.hht[0]}}</td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="left-bottom">
+                    <div class="chart-title fixed-title">
+                        <span>车源地排行榜</span>
+                    </div>
+                    <div id="carSourceRanking" class="full-chart"></div>
+                </div>
+            </div>
+            <div class="middle">
+                <div class="box">
+                    <div class="chart-title fixed-title">
+                        <span>今年旅游客源地</span>
+                    </div>
+                    <div id="touristmap" class="full-chart"></div>
+                </div>
+            </div>
+            <div class="right">
+                <div class="right-top">
+                    <div class="item-left">
+                        <div class="chart-title fixed-title">
+                            <span>游客性别比</span>
+                        </div>
+                        <div class="full-chart" id="sexualPie"></div>
+                    </div>
+                    <div class="item-right">
+                        <div class="chart-title fixed-title">
+                            <span>游客年龄占比</span>
+                        </div>
+                        <div class="full-chart" id="ageRatio"></div>
+                    </div>
+                </div>
+                <div class="right-bottom">
+                    <div class="item-left">
+                        <div class="chart-title fixed-title">
+                            <span>酒店入住率</span>
+                        </div>
+                        <div class="full-chart" id="hotelOccupancyRatio"></div>
+                        <div class="record-time">
+                            <span>{{date}}</span>
+                        </div>
+                    </div>
+                    <div class="item-right">
+                        <div class="chart-title fixed-title">
+                            <span>门票团散比</span>
+                        </div>
+                        <div class="full-chart" id="bartszb"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!--<div class="chart-bottom">
+            <div class="left">
+                <div class="sub-left">
+                    <div class="chart-title fixed-title">
+                        <span>剩余车位</span>
+                    </div>
+                    <div class="full-chart">
+                        <div class="chart-left" id="parkingLotRatio1"></div>
+                        <div class="chart-right" id="parkingLotRatio2"></div>
+                    </div>
+                </div>
+                <div class="sub-right">
+                    <div class="chart-title fixed-title">
+                        <span>票种比</span>
+                    </div>
+                    <div class="full-chart" id="ticketTypeRatio"></div>
+                </div>
+            </div>
+            <div class="middle"></div>
+            <div class="right">
+                <div class="chart-title fixed-title">
+                    <span class="recTitle active" onclick="changeChart(1)">接待人数同比</span>
+                    <i>/</i>
+                    <span class="incTitle" onclick="changeChart(2)">旅游收入同比</span>
+                </div>
+                <div id="receptionNum" class="full-chart"></div>
+                <div id="incomeRatio" class="full-chart" style="display: none;"></div>
+            </div>
+        </div>-->
+        <div class="chart-bottom">
+            <div class="left">
+                <div class="chart-title fixed-title">
+                    <span>接待人数同比</span>
+                </div>
+                <div class="full-chart" id="receptionNum"></div>
+            </div>
+            <div class="middle"></div>
+            <div class="right">
+                <div class="chart-title fixed-title">
+                    <span>旅游收入同比</span>
+                </div>
+                <div class="full-chart" id="incomeRatio"></div>
+            </div>
+        </div>
+    </div>
+</body>
+@@include('tpl/common-script.html')
+<script src="./lib/echarts/china.js"></script>
+<script src="./js/getdate.js"></script>
+<script src="./js/pixi.min.js"></script>
+<script src="./js/echarts-options.js"></script>
+<script>
+    /**
+     *  Particle Storm - pushing 1500 particles with PixiJS
+     *  by Erik Terwan
+     */
+
+    (function(PIXI){
+        "use strict";
+
+        var app, particles, numberOfParticles = 500;
+
+        // Aliases
+        var Application = PIXI.Application,
+            Graphics = PIXI.Graphics;
+
+        var lifetime = 0;
+        //window.onresize = init;
+        function init() {
+            //Create the renderer
+            var appWidth = document.body.clientWidth;
+            var appHeight = document.body.clientHeight;
+            app = new Application(appWidth, appHeight, { antialias: true });
+
+            //Add the canvas to the HTML document
+            document.body.appendChild(app.view);
+
+            // Fullscreen
+            app.view.style.position = "fixed";
+            app.view.style.zIndex = -1;
+            app.view.style.top = 0;
+            app.view.style.left = 0;
+            app.view.style.display = "block";
+            app.view.style.opacity = 0.9;
+            app.view.autoResize = true;
+
+            populate();
+        }
+
+        function populate() {
+            particles = [];
+
+            for (var i = 0; i < numberOfParticles; i++) {
+                var particle = new Particle();
+                particle.init(
+                    Math.random() * window.innerWidth,
+                    Math.random() * window.innerHeight,
+                    Math.random() * 2,
+                    (Math.random() * 3) - 1.5,
+                    (Math.random() * 3) - 1.5
+                );
+
+                particles.push(particle);
+
+                app.stage.addChild(particle.circle);
+            }
+
+            particles.forEach(function(particle){
+                particle.draw();
+            });
+
+            // Animate the rotation
+            app.ticker.add(update);
+        }
+
+        function update(delta) {
+            var sin = Math.sin(lifetime / 50);
+            var cos = Math.cos(lifetime / 50);
+            var xAdd = sin * (2 * delta);
+            var yAdd = cos * (2 * delta);
+
+            particles.forEach(function(particle){
+                particle.update(delta, xAdd, yAdd);
+            });
+
+            lifetime++;
+        }
+
+        var Particle = function() {
+            this.radius = 0;
+            this.xSpeed = 0;
+            this.ySpeed = 0;
+            this.circle;
+
+            this.init = (function(_this){
+                return function(x, y, r, xSpeed, ySpeed) {
+                    _this.circle = new Graphics();
+                    _this.circle.x = x;
+                    _this.circle.y = y;
+
+                    _this.radius = r;
+                    _this.xSpeed = xSpeed;
+                    _this.ySpeed = ySpeed;
+                }
+            })(this);
+
+            this.update = (function(_this){
+                return function(delta, xAdd, yAdd) {
+                    _this.circle.x += (_this.xSpeed * delta);
+                    _this.circle.y += (_this.ySpeed * delta);
+
+                    _this.circle.x += xAdd != undefined ? xAdd : 0;
+                    _this.circle.y += yAdd != undefined ? yAdd : 0;
+
+                    if (_this.circle.x < _this.radius || _this.circle.x > (window.innerWidth - _this.radius)) {
+                        _this.xSpeed = -_this.xSpeed;
+                    }
+
+                    if (_this.circle.y < _this.radius || _this.circle.y > (window.innerHeight - _this.radius)) {
+                        _this.ySpeed = -_this.ySpeed;
+                    }
+                }
+            })(this);
+
+            this.draw =  (function(_this){
+                return function() {
+                    _this.circle.beginFill(0x405EAD);
+                    _this.circle.drawCircle(0, 0, _this.radius);
+                    _this.circle.endFill();
+                }
+            })(this);
+        };
+
+        init();
+    })(PIXI);
+</script>
+<script>
+    function getWeatherData(cb) {
+        $.get(api.weather + '/qingtongxia', function (res) {
+            res = JSON.parse(res);
+            if (res.code == 10000) {
+                cb && cb(res.result.data);
+                return true;
+            } else {
+                console.log(res.msg)
+            }
+        }).fail(function (err) {
+            console.log(err);
+        })
+    }
+    var INST = {};
+    var mapDataArr = [];
+    var vm = new Vue({
+        el: '#index-app',
+        data: {
+            realTime: {
+                gardenNum: 0,
+                maxDaily: {},
+                residualPark: 0,
+                secondGarden: 0,
+                total:0,
+                totalNum: 0,
+                totalSecond: 0,
+                max_daliy_nums: 0
+            },
+            reception_num:null,
+            time: 0,
+            week: 0,
+            date: 0,
+            weather: null,
+            airCondition:'',
+            week3Arr: [],
+            now_year:new Date().getFullYear(),
+            warning:{
+                time:'',
+                msg:''
+            },
+            noWarn:'noWarn'
+        },
+        computed: {
+            computedTotalNumber: function () {
+                return positiveInt(this.realTime.gardenNum).toFixed(0);
+            },
+            max_nums: function () {
+                return this.addCommaToThousands(positiveInt(this.realTime.max_daliy_nums).toFixed(0));
+            },
+            computedMaxDate(){
+                var date = this.realTime.maxDaily.dates;
+                if(date){
+                    return date.replace('-','年').replace('-','月')+'日';
+                }else{
+                    return '';
+                }
+            }
+        },
+        watch: {
+            time:function() {
+                if(this.warning.msg !== ''){
+                    this.noWarn = '';
+                }
+            }
+        },
+        created: function () {
+            var vm = this;
+            var weekArr = new Array("日", "一", "二", "三", "四", "五", "六");
+            var week = new Date().getDay();
+            vm.week = "星期" + weekArr[week];
+            setInterval(function () {
+                var fmtTimeArr = dateFmt("yyyy年MM月dd日 hh:mm:ss", new Date()).split(' ');
+                vm.time = fmtTimeArr[1];
+                vm.date = fmtTimeArr[0];
+            }, 1000);
+            vm.week3Arr = this.getWeek3Nowadays();
+            vm.$nextTick(function () {
+                //赋值农历年月日
+                $('#lunar').text(show_lunar_calendar());
+                //获取天气数据
+                getWeatherData(function (res) {
+                    vm.weather = res;
+                    var airData = res.liveIndex;
+                    Object.keys(airData).forEach(function(key){
+                        for(var i=0;i<airData[key].length;i++){
+                            if(airData[key][i].name == '空气污染扩散指数'){
+                                vm.airCondition = airData[key][i].status;
+                            }
+                        }
+                    });
+                })
+            });
+        },
+        methods: {
+            addCommaToThousands: function (num) {
+                var num = (num || 0).toString();
+                var result = '';
+                while (num.length > 3) {
+                    result = ',' + num.slice(-3) + result;
+                    num = num.slice(0, num.length - 3);
+                }
+                if (num) {
+                    result = num + result;
+                }
+                return result;
+
+            },
+            getWeek3Nowadays: function () {
+                var mydate = new Date();
+                var myddy = mydate.getDay();//获取week number
+                var weekday = ["星期日", "星期一", "星期二", "星期三", "星期四", "星期五", "星期六"];
+                if (myddy == 5) {
+                    return ['星期五', '星期六', '星期日'];
+                } else if (myddy == 6) {
+                    return ['星期六', '星期日', '星期一'];
+                } else {
+                    return [weekday[myddy], weekday[myddy + 1], weekday[myddy + 2]];
+                }
+            }
+        }
+    })
+   
+</script>
+<script>
+
+    $(function () {
+        var carSourceRanking = initCanvas(document.getElementById('carSourceRanking'));
+        carSourceRanking.setOption(window.EchartsOption.carSourceRanking);
+
+        var sexualPie = initCanvas(document.getElementById('sexualPie'));
+        sexualPie.setOption(window.EchartsOption.sexualPie);
+
+        var incomeRatio = initCanvas(document.getElementById('incomeRatio'));
+        incomeRatio.setOption(window.EchartsOption.incomeRatio);
+
+        var receptionNum = initCanvas(document.getElementById('receptionNum'));
+        receptionNum.setOption(window.EchartsOption.receptionNum);
+
+        var ageRatio = initCanvas(document.getElementById('ageRatio'));
+        ageRatio.setOption(window.EchartsOption.ageRatio);
+
+        var hotelOccupancyRatio = initCanvas(document.getElementById('hotelOccupancyRatio'));
+        hotelOccupancyRatio.setOption(window.EchartsOption.hotelOccupancyRatio);
+
+        var bartszb = initCanvas(document.getElementById('bartszb'));
+        bartszb.setOption(window.EchartsOption.bartszb);
+
+        var touristmap = initCanvas(document.getElementById('touristmap'));
+        touristmap.setOption(window.EchartsOption.touristmap);
+
+        /*var ticketTypeRatio = initCanvas(document.getElementById('ticketTypeRatio'));
+        ticketTypeRatio.setOption(window.EchartsOption.ticketTypeRatio);*/
+
+        INST = {
+            incomeRatio: incomeRatio,
+            receptionNum:receptionNum,
+            ageRatio:ageRatio,
+            sexualPie:sexualPie,
+            carSourceRanking:carSourceRanking,
+            hotelOccupancyRatio:hotelOccupancyRatio,
+            touristmap: touristmap,
+            bartszb: bartszb,
+            //ticketTypeRatio: ticketTypeRatio
+        }
+
+        //获取真实数据 填充 自动行为只触发一次
+        updateData(dispatchAction);
+        //50秒更新一次数据
+        setInterval(updateData, 50000);
+        INST.touristmap.on('click', function (params) {
+            $('#touristmap').toggleClass('animate-to-full');
+            INST.touristmap.resize();
+        });
+
+        $(window).on('resize', function () {
+            INST.incomeRatio.resize();
+            INST.receptionNum.resize();
+            INST.ageRatio.resize();
+            INST.sexualPie.resize();
+            INST.carSourceRanking.resize();
+            INST.hotelOccupancyRatio.resize();
+            INST.touristmap.resize();
+            INST.bartszb.resize();
+        })
+
+    });
+
+    function getBigData(cb) {
+        $.get(api.qtxdaya, function (res) {
+            if (res.code == 200) {
+                console.log(res.data);
+                cb && cb(res.data);
+            } else {
+                console.log(res.msg)
+            }
+        }).fail(function (err) {
+            console.log(err);
+        })
+    }
+
+    function updateData(cb) {
+        getBigData(function (data) {
+            updateTableData(data.reception_num);
+            updateWarning(data.warn);
+            updateMap(data.visitor_from);
+            updateIncomeRatio(data.income);
+            updateReceptionNum(data.reception_compared);
+            updaeAgeRatio(data.visitor_att[2019]);
+            updateHotelOccupancyRatio(data.hotel);
+            updateCarSourceRanking(data.car_from);
+            updateSexualPie(data.visitor_att);
+            updateBartszb(data.ticket);
+            cb && cb();
+        });
+    }
+
+    function updateTableData(data) {
+        var data1 = data.year_reception;
+        var data2 = data.mouth_reception;
+        var data3 = data.day_reception;
+        var newData1 = [];
+        var newData2 = [];
+        var newData3 = [];
+        for(var i=0;i<data1.length;i++){
+            if(data1[i].scenic_spot_id == 1){
+                newData1.push(data1[i].num);
+            }else if(data1[i].scenic_spot_id == 2){
+                newData2.push(data1[i].num);
+            }
+            else if(data1[i].scenic_spot_id == 3){
+                newData3.push(data1[i].num);
+            }
+        }
+        for(var i=0;i<data2.length;i++){
+            if(data2[i].scenic_spot_id == 1){
+                newData1.push(data2[i].num);
+            }else if(data2[i].scenic_spot_id == 2){
+                newData2.push(data2[i].num);
+            }
+            else if(data2[i].scenic_spot_id == 3){
+                newData3.push(data2[i].num);
+            }
+        }
+        for(var i=0;i<data3.length;i++){
+            if(data3[i].scenic_spot_id == 1){
+                newData1.push(data3[i].num);
+            }else if(data3[i].scenic_spot_id == 2){
+                newData2.push(data3[i].num);
+            }
+            else if(data3[i].scenic_spot_id == 3){
+                newData3.push(data3[i].num);
+            }
+        }
+        vm.reception_num = {
+            dxg:newData1,
+            hhl:newData2,
+            hht:newData3
+        };
+    }
+
+    function updateWarning(data) {
+        vm.warning.time = data.warn_time;
+        vm.warning.msg = data.warn_msg;
+    }
+
+    function dispatchAction() {
+        var index1 = -1;
+        var index2 = -1;
+        var index3 = -1;
+        var index4 = -1;
+        var index5 = -1;
+        var index6 = -1;
+        var index7 = -1;
+        setInterval(function () {
+            var dataLen1 = INST.receptionNum.getOption().series[0].data.length;
+            // 取消之前高亮的图形
+            INST.receptionNum.dispatchAction({
+                type: 'downplay',
+                seriesIndex: 0,
+                dataIndex: index1
+            });
+            index1 = (index1 + 1) % dataLen1;
+            // 高亮当前图形
+            INST.receptionNum.dispatchAction({
+                type: 'highlight',
+                seriesIndex: 0,
+                dataIndex: index1
+            });
+            INST.receptionNum.dispatchAction({
+                type: 'showTip',
+                seriesIndex: 0,
+                dataIndex: index1
+            });
+
+            var dataLen2 = INST.incomeRatio.getOption().series[0].data.length;
+            // 取消之前高亮的图形
+            INST.incomeRatio.dispatchAction({
+                type: 'downplay',
+                seriesIndex: 0,
+                dataIndex: index2
+            });
+            index2 = (index2 + 1) % dataLen2;
+            // 高亮当前图形
+            INST.incomeRatio.dispatchAction({
+                type: 'highlight',
+                seriesIndex: 0,
+                dataIndex: index2
+            });
+            INST.incomeRatio.dispatchAction({
+                type: 'showTip',
+                seriesIndex: 0,
+                dataIndex: index2
+            });
+
+            var dataLen3 = INST.carSourceRanking.getOption().series[0].data.length;
+            // 取消之前高亮的图形
+            INST.carSourceRanking.dispatchAction({
+                type: 'downplay',
+                seriesIndex: 0,
+                dataIndex: index3
+            });
+            index3 = (index3 + 1) % dataLen3;
+            // 高亮当前图形
+            INST.carSourceRanking.dispatchAction({
+                type: 'highlight',
+                seriesIndex: 0,
+                dataIndex: index3
+            });
+            INST.carSourceRanking.dispatchAction({
+                type: 'showTip',
+                seriesIndex: 0,
+                dataIndex: index3
+            });
+
+            var dataLen4 = INST.ageRatio.getOption().series[0].data.length;
+            // 取消之前高亮的图形
+            INST.ageRatio.dispatchAction({
+                type: 'downplay',
+                seriesIndex: 0,
+                dataIndex: index4
+            });
+            index4 = (index4 + 1) % dataLen4;
+            // 高亮当前图形
+            INST.ageRatio.dispatchAction({
+                type: 'highlight',
+                seriesIndex: 0,
+                dataIndex: index4
+            });
+            INST.ageRatio.dispatchAction({
+                type: 'showTip',
+                seriesIndex: 0,
+                dataIndex: index4
+            });
+
+            var dataLen5 = INST.sexualPie.getOption().series[0].data.length;
+            // 取消之前高亮的图形
+            INST.sexualPie.dispatchAction({
+                type: 'downplay',
+                seriesIndex: 0,
+                dataIndex: index5
+            });
+            index5 = (index5 + 1) % dataLen5;
+            // 高亮当前图形
+            INST.sexualPie.dispatchAction({
+                type: 'highlight',
+                seriesIndex: 0,
+                dataIndex: index5
+            });
+            INST.sexualPie.dispatchAction({
+                type: 'showTip',
+                seriesIndex: 0,
+                dataIndex: index5
+            });
+
+            var dataLen6 = INST.hotelOccupancyRatio.getOption().series[0].data.length;
+            // 取消之前高亮的图形
+            INST.hotelOccupancyRatio.dispatchAction({
+                type: 'downplay',
+                seriesIndex: 0,
+                dataIndex: index6
+            });
+            index6 = (index6 + 1) % dataLen6;
+            // 高亮当前图形
+            INST.hotelOccupancyRatio.dispatchAction({
+                type: 'highlight',
+                seriesIndex: 0,
+                dataIndex: index6
+            });
+            INST.hotelOccupancyRatio.dispatchAction({
+                type: 'showTip',
+                seriesIndex: 0,
+                dataIndex: index6
+            });
+
+            var dataLen7 = INST.touristmap.getOption().series[0].data.length;
+            // 取消之前高亮的图形
+            INST.touristmap.dispatchAction({
+                type: 'downplay',
+                seriesIndex: 0,
+                dataIndex: index7
+            });
+            index7 = (index7 + 1) % dataLen7;
+            // 高亮当前图形
+            INST.touristmap.dispatchAction({
+                type: 'highlight',
+                seriesIndex: 0,
+                dataIndex: index7
+            });
+            INST.touristmap.dispatchAction({
+                type: 'showTip',
+                seriesIndex: 0,
+                dataIndex: index7
+            });
+        }, 3000);
+    }
+
+    function initCanvas(dom) {
+        return echarts.init(dom);
+    }
+
+    function updateTotalNumber(realTime) {
+        realTime.max_daliy_nums = realTime.maxDaily.nums;
+        TweenLite.to(vm.realTime, 1, realTime);
+    }
+
+    function positiveInt(x) {
+        var x = Number(x)
+        if (!isNaN(x)) {
+            return x < 0 ? -x : x;
+        }
+    }
+    function dateFmt(fmt, date) { //author: meizz
+        var o = {
+            "M+": date.getMonth() + 1,                 //月份
+            "d+": date.getDate(),                    //日
+            "h+": date.getHours(),                   //小时
+            "m+": date.getMinutes(),                 //分
+            "s+": date.getSeconds(),                 //秒
+            "q+": Math.floor((date.getMonth() + 3) / 3), //季度
+            "S": date.getMilliseconds()             //毫秒
+        };
+        if (/(y+)/.test(fmt))
+            fmt = fmt.replace(RegExp.$1, (date.getFullYear() + "").substr(4 - RegExp.$1.length));
+        for (var k in o)
+            if (new RegExp("(" + k + ")").test(fmt))
+                fmt = fmt.replace(RegExp.$1, (RegExp.$1.length == 1) ? (o[k]) : (("00" + o[k]).substr(("" + o[k]).length)));
+        return fmt;
+    }
+    function getLunar(cb) {
+        $.get('http://www.sojson.com/open/api/lunar/json.shtml', function (res) {
+            cb(res);
+        })
+    }
+
+    //更新客源地
+    function updateMap(data) {
+        var outData = [];
+        var valData = [];
+        var planePath = 'path://M1705.06,1318.313v-89.254l-319.9-221.799l0.073-208.063c0.521-84.662-26.629-121.796-63.961-121.491c-37.332-0.305-64.482,36.829-63.961,121.491l0.073,208.063l-319.9,221.799v89.254l330.343-157.288l12.238,241.308l-134.449,92.931l0.531,42.034l175.125-42.917l175.125,42.917l0.531-42.034l-134.449-92.931l12.238-241.308L1705.06,1318.313z';
+        var color = ['white', '#ffa022', '#46bee9', '#a6c84c'];
+        var series = [];
+        mapDataArr = [];
+        data.forEach(function (e) {
+            if (e.jd) {
+                outData.push({
+                    fromName: e.place,
+                    toName: e.goalcity,
+                    coords: [[e.jd.trim(), e.wd.trim()], [e.goaljd.trim(), e.goalwd.trim()]],
+                    value: e.num
+                });
+                valData.push({
+                    name:e.place,
+                    value:e.num
+                });
+            }
+
+        });
+        outData = outData.sort(function (a, b) {
+            return b.value - a.value;
+        }).slice(0, 10);
+
+        var scatterData = outData.map(function (dataItem) {
+            return {
+                name: dataItem.fromName,
+                value: dataItem.coords[0].concat([dataItem.value])
+            };
+        });
+
+        var mapData = outData.map(function (dataItem) {
+            return {
+                name: dataItem.fromName.slice(0, 2),
+                value: dataItem.value
+            };
+        });
+        var valueData = outData.map(function (dataItem) {
+            return dataItem.value
+        });
+        mapDataArr.push({
+            data: mapData,
+            max: Math.max.apply(null, valueData),
+            min: Math.min.apply(null, valueData),
+        });
+        console.log('mapDataArr:', mapDataArr);
+        series.push(
+            {
+                name:'2019',
+                type: 'lines',
+                coordinateSystem: 'geo',
+                zlevel: 1,
+                effect: {
+                    show: true,
+                    period: 6,
+                    trailLength: 0.7,
+                    color: '#fff',
+                    symbolSize: 1
+                },
+                lineStyle: {
+                    normal: {
+                        color: color[1],
+                        width: 0,
+                        curveness: 0.2
+                    }
+                },
+                tooltip: {
+                    show: false
+                },
+                data: outData
+            },
+            {
+                name:'2019',
+                type: 'lines',
+                coordinateSystem: 'geo',
+                zlevel: 2,
+                symbol: ['none', 'arrow'],
+                symbolSize: 2,
+                effect: {
+                    show: true,
+                    period: 6,
+                    trailLength: 0,
+                    symbol: planePath,
+                    symbolSize: 15
+                },
+                lineStyle: {
+                    normal: {
+                        color: color[1],
+                        width: 1,
+                        opacity: 0.6,
+                        curveness: 0.2
+                    }
+                },
+                tooltip: {
+                    show: false
+                },
+                data: outData
+            },
+            {
+                name:'2019',
+                type: 'effectScatter',
+                coordinateSystem: 'geo',
+                zlevel: 2,
+                rippleEffect: {
+                    brushType: 'stroke'
+                },
+
+                symbolSize: 5,
+                itemStyle: {
+                    normal: {
+                        color: color[1]
+                    }
+                },
+                tooltip: {
+                    show: false
+                },
+                data: scatterData
+            });
+        series.unshift({
+            name: '2019',
+            type: 'map',
+            mapType: 'china',
+            //geoIndex: 0,
+            roam: false,
+            zoom:1.23,
+            label: {
+                normal: {
+                    show: true,
+                    textStyle: {
+                        color: '#8AC5FF'
+                    },
+                },
+                emphasis: {
+                    show: true
+                }
+            },
+            itemStyle: {
+                emphasis: {
+                    areaColor: '#fff'
+                }
+            },
+            data:valData
+        });
+        $.extend(true, EchartsOption.touristmap, {
+            series: series
+        });
+        INST.touristmap.setOption(EchartsOption.touristmap);
+    }
+
+    //更新旅游收入同比
+    function updateIncomeRatio(data) {
+        var legend = [];
+        var series = [];
+        var subSeries = [];
+        Object.keys(data).forEach(function(key){
+            legend.push(key);
+            subSeries = [];
+            for(var i=1;i<=12;i++){
+                if(data[key][i]){
+                    subSeries.push(((data[key][i].add_rate)*100).toFixed(2));
+                }
+            }
+            series.push({
+                name:key,
+                data:subSeries
+            });
+        });
+        $.extend(true, EchartsOption.incomeRatio, {
+            legend: {
+                data:legend
+            },
+            series: series
+        });
+        INST.incomeRatio.setOption(EchartsOption.incomeRatio);
+    }
+
+    //更新接待人数同比
+    function updateReceptionNum(data) {
+        var legend = [];
+        var series = [];
+        var subSeries = [];
+        Object.keys(data).forEach(function(key){
+            legend.push(key);
+            subSeries = [];
+            for(var i=1;i<=12;i++){
+                if(data[key][i]){
+                    subSeries.push(((data[key][i].add_rate)*100).toFixed(2));
+                }
+            }
+            series.push({
+                name:key,
+                data:subSeries
+            });
+        });
+        $.extend(true, EchartsOption.receptionNum, {
+            legend: {
+                data:legend
+            },
+            series: series
+        });
+        INST.receptionNum.setOption(EchartsOption.receptionNum);
+    }
+
+    // 更新年龄占比
+    function updaeAgeRatio(data) {
+        var series = {
+            data : [
+                (data.age1_rate*100).toFixed(2),
+                (data.age2_rate*100).toFixed(2),
+                (data.age3_rate*100).toFixed(2),
+                (data.age4_rate*100).toFixed(2),
+                (data.age5_rate*100).toFixed(2),
+                (data.age6_rate*100).toFixed(2),
+                (data.age7_rate*100).toFixed(2)
+            ]
+        };
+        $.extend(true, EchartsOption.ageRatio, {
+            series: series
+        });
+        INST.ageRatio.setOption(EchartsOption.ageRatio);
+    }
+
+    //更新酒店入住率
+    function updateHotelOccupancyRatio(data) {
+        var series = [{
+            data:[{
+                value:data.hotel_occupancy_num
+            },{
+                value:data.hotel_room_num-data.hotel_occupancy_num
+            }]
+        },{
+            data:[{
+                value:data.hotel_occupancy_num
+            },{
+                value:data.hotel_room_num-data.hotel_occupancy_num
+            }]
+        }];
+        $.extend(true, EchartsOption.hotelOccupancyRatio, {
+            title:{
+                text:(data.rate*100).toFixed(1)+'%'
+            },
+            series: series
+        });
+        INST.hotelOccupancyRatio.setOption(EchartsOption.hotelOccupancyRatio);
+    }
+
+    //更新车源地排行
+    function updateCarSourceRanking(data) {
+        var legend = [];
+        var subSeries = [];
+        var series = [];
+        Object.keys(data).forEach(function(key){
+            legend = [];
+            subSeries = [];
+            for(var i=0;i<data[key].length;i++){
+                if(data[key][i]){
+                    legend.push(data[key][i].name);
+                    subSeries.push(data[key][i].num);
+                }
+            }
+            series.push({
+                name:key,
+                data:subSeries
+            });
+        });
+        $.extend(true, EchartsOption.carSourceRanking, {
+            xAxis:{
+                data:legend
+            },
+            series: series
+        });
+        INST.carSourceRanking.setOption(EchartsOption.carSourceRanking);
+    }
+
+    //更新游客性别比
+    function updateSexualPie(data){
+        $.extend(true, EchartsOption.sexualPie, {
+            series: [{
+                data:[{
+                    value:(data.manRate*100).toFixed(2)
+                },{
+                    value:(data.womenRate*100).toFixed(2)
+                }]
+            }]
+        });
+        INST.sexualPie.setOption(EchartsOption.sexualPie);
+    }
+
+    //更新团散比
+    function updateBartszb(data) {
+        var legend = [];
+        var data1 = [];
+        var data2 = [];
+        Object.keys(data).forEach(function(key){
+            legend.push(key);
+            data1.push((data[key].scattered_rate*100).toFixed(2));
+            data2.push((data[key].group_rate*100).toFixed(2));
+        });
+        $.extend(true, EchartsOption.bartszb, {
+            yAxis:[{},{
+                data:legend
+            },{
+                data:legend
+            }],
+            series: [{
+                data:data1
+            },{
+                data:data2
+            }]
+        });
+        INST.bartszb.setOption(EchartsOption.bartszb);
+    }
+
+    window.onload = function () {
+        //setInterval(changeChart, 36000)
+    }
+    function changeChart(num = 0) {
+        if (num === 2) {
+            $('#receptionNum').css('display', 'none');
+            $('#incomeRatio').css('display', 'block');
+            $('.recTitle').removeClass('active');
+            $('.incTitle').addClass('active');
+            INST.incomeRatio.resize();
+        } else if (num === 1) {
+            $('#incomeRatio').css('display', 'none');
+            $('#receptionNum').css('display', 'block');
+            $('.incTitle').removeClass('active');
+            $('.recTitle').addClass('active');
+            INST.receptionNum.resize();
+        } else {
+            if ($('.incTitle').hasClass('active')) {
+                changeChart(1);
+            } else {
+                changeChart(2);
+            }
+        }
+    }
+</script>
+
+</html>
